@@ -83,12 +83,13 @@ app.post('/api/auth/items', function(req, res) {
     item.save(function(err) {
       if (err)
         return res.status(400).json({ message: 'Missing required fields' });
-    });
-    owner.items.push(item);
-    owner.save(function(err) {
-      if (err)
-        return res.status(500).json({ message: 'Failed to update owner' });
-      return res.json(item);
+    
+      owner.items.push(item);
+      owner.save(function(err) {
+        if (err)
+          return res.status(500).json({ message: 'Failed to update owner' });
+        return res.json(item);
+      });
     });
   });
 });

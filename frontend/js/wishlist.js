@@ -27,23 +27,39 @@ app.controller('UserController', [ '$scope', '$resource', '$log', function($scop
   var User = $resource('http://localhost:2000/api/auth/users/:userid', {userid: userid});
   var Item = $resource('http://localhost:2000/api/auth/items/:itemid');
 
-  User.get(function(data) { $scope.user = data; });
-  $scope.item = {priority: 2, url: 'http://variantweb.net'};
+  $scope.item = {priority: 2};
+  $scope.user = {items: []};
+  User.get().$promise
+  .then(function(data) {
+    $scope.user = data;
+  })
+  .catch(function() {
+    $scope.message = {type: 'error', value: 'Unable to load user data'};
+  });
 
   $scope.addItem = function() {
     $scope.item.owner = userid;
-    Item.save($scope.item).$promise.then(function(data) {
+    Item
+    .save($scope.item).$promise.then(function(data) {
       $scope.user.items.push(data);
       $scope.item = {priority: 2};
+      $scope.message = {type: 'success', value: 'Item added'};
+    })
+    .catch(function() {
+      $scope.message = {type: 'error', value: 'Unable to add item'};
     });
   };
 
   $scope.deleteItem = function(itemid) {
-    $log.log(itemid);
-    Item.delete({itemid: itemid});
-    $scope.user.items = $scope.user.items.filter(function(item) {
-      $log.log(item._id + ', ' + itemid);
-      return item._id != itemid;
+    Item.delete({itemid: itemid}).$promise
+    .then(function() {
+      $scope.user.items = $scope.user.items.filter(function(item) {
+        return item._id != itemid;
+      });
+      $scope.message = {type: 'success', value: 'Item deleted'};
+    })
+    .catch(function() {
+      $scope.message = {type: 'error', value: 'Unable to delete item'};
     });
   };
 }]);
