@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="wishlist">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Wishlist</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/wishlist.css" rel="stylesheet">
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+  <body>
+
+    <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">Wishlist</a>
+        </div>
+        <div class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li class="active"><a href="#">My Wishlist</a></li>
+            <li><a href="#about">Others</a></li>
+            <li><a href="#contact">Profile</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="container sm-padding">
+
+<div class="starter-template">
+
+<div class="col-sm-4">
+<div class="panel panel-default">
+<div class="panel-heading">
+<h3 class="panel-title" style="display:inline">Can't live without</h3>
+<span class="glyphicon glyphicon-plus" style="float:right"></span>
+</div>
+<div class="panel-body no-padding">
+<table class="table table-striped no-margin">
+<tbody>
+<tr>
+<td class="item-cell-name"><a href="#">This</a></td>
+<td>$30</td>
+<td>
+
+<button class="btn btn-default">
+<span class="glyphicon glyphicon-pencil"></span>
+</button>
+
+</td>
+<td>
+
+<button class="btn btn-default" data-toggle="modal" data-target=".bs-example-modal-sm">
+<span class="glyphicon glyphicon-trash"></span>
+</button>
+
+<div class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+
+     <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+        <h4 class="modal-title">Modal title</h4>
+      </div>
+      <div class="modal-body">
+        <p>One fine body&hellip;</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary">Save changes</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+<div class="col-sm-4">
+<div class="panel panel-default">
+<div class="panel-heading">
+<h3 class="panel-title">Really Want</h3>
+</div>
+<div class="panel-body no-padding">
+<table class="table table-striped no-margin">
+<tbody>
+<tr>
+<td class="item-cell-name"><a href="#">This item now now now now now</a></td>
+<td>$30</td>
+<td>
+
+<button class="btn btn-default" data-toggle="modal" data-target=".bs-example-modal-sm">
+<span class="glyphicon glyphicon-star"></span></td>
+</button>
+
+</tr>
+<tr>
+<td class="item-cell-name"><a href="#">This item now now now now now</a></td>
+<td>$30</td>
+<td>
+
+<button class="btn btn-default" data-toggle="modal" data-target=".bs-example-modal-sm">
+<span class="glyphicon glyphicon-star-empty"></span>
+</button>
+
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+<div class="col-sm-4">
+<div class="panel panel-default">
+<div class="panel-heading">
+<h3 class="panel-title">Nice to have</h3>
+</div>
+<div class="panel-body no-padding">
+<table class="table table-striped no-margin">
+<tbody>
+<tr>
+<td><a href="#">This item now now now now now</a></td>
+<td>$30</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+    </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/angular.min.js"></script>
+    <script src="js/wishlist.js"></script>
+  </body>
+</html>
+

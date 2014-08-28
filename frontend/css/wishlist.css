@@ -1,0 +1,28 @@
+body {
+  padding-top: 50px;
+}
+.starter-template {
+  padding: 10px 10px;
+  text-align: center;
+}
+.no-padding {
+  padding: 0px;
+}
+.no-margin {
+  margin: 0px;
+}
+.glyph-padding {
+  padding: .4em .5em .2em .6em;
+}
+.item-cell-name {
+  width: 100%;
+  text-align: left;
+}
+.table > thead > tr > th,
+.table > tbody > tr > th,
+.table > tfoot > tr > th,
+.table > thead > tr > td,
+.table > tbody > tr > td,
+.table > tfoot > tr > td {
+  vertical-align: middle;
+}
