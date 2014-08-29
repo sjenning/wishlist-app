@@ -1,25 +1,35 @@
+<!--
+vim: tabstop=2 shiftwidth=2 expandtab
+-->
+
 <div>{{ user.name }}</div>
-<div>
-<ul>
-<li ng-repeat="item in user.items" ng-switch="!!item.url">
-<a target="_blank" ng-href="{{item.url}}" ng-switch-when="true">{{item.name}}</a>
-<span ng-switch-when="false">{{item.name}}</span>
-<button ng-click="deleteItem(item._id)">delete</button>
-</li>
-</ul>
+<div ng-repeat="item in user.items">
+  <div ng-hide="isEditItem(item)">
+    <a ng-show="item.url" target="_blank" ng-href="{{item.url}}">{{item.name}}</a>
+    <span ng-hide="item.url">{{item.name}}</span>
+    <span ng-show="isLoggedInUser()">
+      <button ng-click="deleteItem(item)">delete</button>
+      <button ng-click="showEdit(item)">edit</button>
+    </span>
+    <span ng-hide="isLoggedInUser()">
+      <button ng-click="toggleItemBought(item)">{{item.bought}}</button>
+    </span>
+  </div>
+  <div ng-show="isEditItem(item)">
+    <form novalidate>
+      <item-form></item-form>
+      <div>
+        <button ng-click="saveItem(item)">Save</button> 
+        <button ng-click="hideEdit(item)">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
 </div>
 <div>
 <div><span ng-show="message">{{message.value}}</span></div>
 <form ng-submit="addItem()" novalidate>
-<div><label>Name:</label> <input type="text" name="name" size=40 ng-model="item.name" required /></div>
-<div><label>URL:</label> <input type="url" name="url" size=40 ng-model="item.url" /></div>
-<div><label>Price:</label> <input type="number" name="price" size="8" ng-model="item.price" /></div>
-<div><label>Priority:</label> <select name="priority" ng-model="item.priority">
-<option value=1>Can't Live Without</option>
-<option value=2>Really Want</option>
-<option value=3>Nice to Have</option>
-</select>
-</div>
-<div><input type="submit" value="Add Item" /></div>
+  <item-form></item-form>
+  <div><input type="submit" value="Add Item" /></div>
 </form>
 </div>

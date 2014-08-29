@@ -44,6 +44,17 @@ app.post('/api/login', function(req, res) {
   });
 });
 
+app.post('/api/register', function(req, res) {
+  console.log(req.body);
+  var user = new User(req.body);
+  user.save(function(err, user) {
+    if (err || !user)
+      return res.status(500).json({ message: 'Failed to register' });
+    delete user.password;
+    return res.json(user);
+  });
+});
+
 app.get('/api/auth/users', function(req, res) {
   User.find({}, 'name', function(err, users) {
     if (err)
@@ -75,7 +86,8 @@ app.get('/api/auth/items', function(req, res) {
 });
 
 app.post('/api/auth/items', function(req, res) {
-  User.findById(req.user, function(err, owner) {
+  //User.findById(req.user, function(err, owner) {
+  User.findById(req.body.owner, function(err, owner) {
     if (err || !owner)
       return res.status(500).json({ message: 'Failed to lookup owner' });
     var item = new Item(req.body);
@@ -83,7 +95,6 @@ app.post('/api/auth/items', function(req, res) {
     item.save(function(err) {
       if (err)
         return res.status(400).json({ message: 'Missing required fields' });
-    
       owner.items.push(item);
       owner.save(function(err) {
         if (err)
@@ -104,7 +115,8 @@ app.post('/api/auth/items', function(req, res) {
   });
 });*/
 
-app.put('/api/auth/items/:itemid', function(req, res) {
+app.post('/api/auth/items/:itemid', function(req, res) {
+  delete req.body._id;
   Item.findByIdAndUpdate(req.params.itemid, { $set: req.body }, function(err, item) {
     if (err || !item)
       return res.status(404).json({ message: 'No item with id ' + req.params.itemid});
