@@ -1,20 +1,66 @@
 // vim: tabstop=2 shiftwidth=2 expandtab
 
-var app = angular.module('wishlistApp', ['ngRoute', 'ngResource']);
+var app = angular.module('wishlistApp', ['ngRoute', 'ngResource', 'ngCookies']);
 
-app.config(['$routeProvider', function($routeProvider) {
+app.factory('authInterceptor', ['$cookies', function($cookies) {
+  return {
+    request: function(config) {
+      if ($cookies.token)
+        config.headers.Authorization = 'Bearer ' + $cookies.token;
+      return config;
+    },
+    response: function(response) {
+      if (response.status === 401)
+        $location.path('/login');
+      return response;
+    }
+  };
+}]);
+
+app.config(['$routeProvider', '$httpProvider', function($routeProvider, $httpProvider) {
     $routeProvider.when('/', {
-      templateUrl: 'welcome.html'
+      templateUrl: 'partials/welcome.html'
+    });
+    $routeProvider.when('/login', {
+      templateUrl: 'partials/login.html',
+      controller: 'LoginController'
+    });
+    $routeProvider.when('/login', {
+      controller: 'LogoutController'
     });
     $routeProvider.when('/users', {
-      templateUrl: 'userlist.html',
+      templateUrl: 'partials/userlist.html',
       controller: 'UserListController'
     });
     $routeProvider.when('/users/:userid', {
-      templateUrl: 'user.html',
+      templateUrl: 'partials/user.html',
       controller: 'UserController'
     });
     $routeProvider.otherwise({redirectTo: '/'});
+    $httpProvider.interceptors.push('authInterceptor');
+}]);
+
+app.controller('LogoutController', [ '$cookies', '$location', function($cookies, $location) {
+  delete $cookies.token;
+  $location.path('/login');
+}]);
+
+app.controller('LoginController', [ '$scope', '$resource', '$cookies', '$location', function($scope, $resource, $cookies, $location) {
+  var Login = $resource('http://localhost:2000/api/login');
+  $scope.user = {};
+
+  $scope.login = function() {
+    Login.save($scope.user).$promise
+    .then(function(data) {
+      $cookies.token = data.token;
+      $cookies.id = data.id;
+      $location.path('/users/' + data.id);
+    })
+    .catch(function() {
+      delete $cookies.token;
+      $scope.message = {type: 'error', value: 'Bad username or password'};
+    });
+  };
 }]);
 
 app.controller('UserListController', [ '$scope', '$resource', function($scope, $resource) {
@@ -22,8 +68,8 @@ app.controller('UserListController', [ '$scope', '$resource', function($scope, $
   Users.query(function(data) { $scope.users = data; });
 }]);
 
-app.controller('UserController', [ '$scope', '$resource', '$log', '$routeParams', function($scope, $resource, $log, $routeParams) {
-  var userid = '53f416403ad981885d6e9e87';
+app.controller('UserController', [ '$scope', '$resource', '$log', '$routeParams', '$cookies', function($scope, $resource, $log, $routeParams, $cookies) {
+  var userid = $cookies.id;
   var User = $resource('http://localhost:2000/api/auth/users/:userid');
   var Item = $resource('http://localhost:2000/api/auth/items/:itemid');
 
@@ -106,6 +152,6 @@ app.controller('UserController', [ '$scope', '$resource', '$log', '$routeParams'
 app.directive('itemForm', function() {
   return {
     restrict: 'E',
-    templateUrl: 'itemform.html',
+    templateUrl: 'partials/itemform.html',
   };
 });

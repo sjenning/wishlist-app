@@ -1,0 +1,10 @@
+<!--
+vim: tabstop=2 shiftwidth=2 expandtab
+-->
+<div>{{message}}</div>
+<form ng-submit="login()" novalidate>
+  <div><label>Email:</label> <input type="text" name="username" ng-model="user.username" required /></div>
+  <div><label>Password:</label> <input type="password" name="password" ng-model="user.password" required /></div>
+  <div><input type="submit" value="Login" /></div>
+</form>
+

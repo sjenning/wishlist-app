@@ -18,18 +18,14 @@ app.use(bodyParser.json());
 app.use(logger('dev'));
 app.use(express.static(__dirname + 'public'));
 
-//app.use('/api/auth', expressJwt({ secret: 'wishlist' }));
-app.use('/api/auth', function(req, res, next) {
-  req.user = '53f416403ad981885d6e9e87';
-  return next();
-});
+app.use('/api/auth', expressJwt({ secret: 'secretnomore' }));
 
 app.all('*', function(req, res, next) {
   res.header('Access-Control-Allow-Origin', req.headers.origin);
   res.header('Access-Control-Allow-Methods', 'POST, GET, PUT, DELETE, OPTIONS');
   res.header('Access-Control-Allow-Credentials', false);
   res.header('Access-Control-Max-Age', '86400');
-  res.header('Access-Control-Allow-Headers', 'X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept');
+  res.header('Access-Control-Allow-Headers', 'X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept, Authorization');
   next();
 });
 
@@ -39,7 +35,8 @@ app.post('/api/login', function(req, res) {
       return res.status(401).json({ message: 'User not found' });
     if (!user.validPassword(req.body.password))
       return res.status(401).json({ message: 'Bad password' });
-    var token = jwt.sign(user._id, 'wishlist', { expiresInMinutes: 1 });
+    delete user.password;
+    var token = jwt.sign(user, 'secretnomore', { expiresInMinutes: 1 });
     return res.json({ token: token, id: user._id });
   });
 });
