@@ -10,8 +10,10 @@ app.factory('authInterceptor', ['$cookies', function($cookies) {
       return config;
     },
     response: function(response) {
-      if (response.status === 401)
+      if (response.status === 401) {
+        delete $cookies.token;
         $location.path('/login');
+      }
       return response;
     }
   };
@@ -19,14 +21,11 @@ app.factory('authInterceptor', ['$cookies', function($cookies) {
 
 app.config(['$routeProvider', '$httpProvider', function($routeProvider, $httpProvider) {
     $routeProvider.when('/', {
-      templateUrl: 'partials/welcome.html'
+      redirectUrl: '/login'
     });
     $routeProvider.when('/login', {
       templateUrl: 'partials/login.html',
       controller: 'LoginController'
-    });
-    $routeProvider.when('/login', {
-      controller: 'LogoutController'
     });
     $routeProvider.when('/users', {
       templateUrl: 'partials/userlist.html',
@@ -40,9 +39,20 @@ app.config(['$routeProvider', '$httpProvider', function($routeProvider, $httpPro
     $httpProvider.interceptors.push('authInterceptor');
 }]);
 
-app.controller('LogoutController', [ '$cookies', '$location', function($cookies, $location) {
-  delete $cookies.token;
-  $location.path('/login');
+app.run(['$rootScope', '$location', '$cookies', function($rootScope, $location, $cookies) {
+  $rootScope.$on('$routeChangeStart', function(event) {
+    if (!$cookies.token)
+      $location.path("/login");
+  });
+}]);
+
+app.controller('NavbarController', [ '$scope', '$cookies', '$location', '$log', function($scope, $cookies, $location, $log) {
+  $scope.homeroute = '#/users/' + $cookies.id;
+
+  $scope.logout = function() {
+    delete $cookies.token;
+    $location.path('/login');
+  };
 }]);
 
 app.controller('LoginController', [ '$scope', '$resource', '$cookies', '$location', function($scope, $resource, $cookies, $location) {
@@ -63,9 +73,20 @@ app.controller('LoginController', [ '$scope', '$resource', '$cookies', '$locatio
   };
 }]);
 
-app.controller('UserListController', [ '$scope', '$resource', function($scope, $resource) {
+app.controller('UserListController', [ '$scope', '$resource', '$cookies', '$location', function($scope, $resource, $cookies, $log) {
+  var userid = $cookies.id;
   var Users = $resource('http://localhost:2000/api/auth/users');
-  Users.query(function(data) { $scope.users = data; });
+
+  Users.query().$promise
+  .then(function(data) {
+    $scope.users = data;
+    $scope.users = $scope.users.filter(function(entry) {
+      return entry._id != userid;
+    });
+  })
+  .catch(function() {
+     $scope.message = { type: 'error', value: 'Unable to get user list' };
+  });
 }]);
 
 app.controller('UserController', [ '$scope', '$resource', '$log', '$routeParams', '$cookies', function($scope, $resource, $log, $routeParams, $cookies) {
@@ -134,7 +155,7 @@ app.controller('UserController', [ '$scope', '$resource', '$log', '$routeParams'
   };
 
   $scope.isLoggedInUser = function() {
-      return $scope.user._id == userid;
+    return $scope.user._id == userid;
   };
 
   $scope.toggleItemBought = function(item) {

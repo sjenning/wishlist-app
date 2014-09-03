@@ -1,11 +1,15 @@
+<!--
+vim: tabstop=2 shiftwidth=2 expandtab
+-->
+
 <!DOCTYPE html>
 <html ng-app="wishlistApp">
 <head><title>Wishlist Application</title></head>
 <body>
-<div>
-<span><a href="#/">Home</a></span>
-<span><a href="#/users">Users</a></span>
-<span><a href="#/logout">Logout</a></span>
+<div ng-controller="NavbarController">
+  <span><a ng-href="{{homeroute}}">Home</a></span>
+  <span><a href="#/users">Users</a></span>
+  <span><a ng-click="logout()" href="#/login">Logout</a></span>
 </div>
 <div ng-view></div>
 <script src="js/angular.min.js"></script>
