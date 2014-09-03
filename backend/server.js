@@ -42,7 +42,6 @@ app.post('/api/login', function(req, res) {
 });
 
 app.post('/api/register', function(req, res) {
-  console.log(req.body);
   var user = new User(req.body);
   user.save(function(err, user) {
     if (err || !user)
@@ -62,7 +61,7 @@ app.get('/api/auth/users', function(req, res) {
 
 app.get('/api/auth/users/:userid', function(req, res) {
   var itemFields = "name price priority url";
-  if (req.params.userid != req.user)
+  if (req.params.userid != req.user._id)
     itemFields += " bought";
   User.findById(req.params.userid, 'name items').
        populate('items', itemFields).
@@ -83,7 +82,6 @@ app.get('/api/auth/items', function(req, res) {
 });
 
 app.post('/api/auth/items', function(req, res) {
-  //User.findById(req.user, function(err, owner) {
   User.findById(req.body.owner, function(err, owner) {
     if (err || !owner)
       return res.status(500).json({ message: 'Failed to lookup owner' });
@@ -104,9 +102,10 @@ app.post('/api/auth/items', function(req, res) {
 
 // make sure that attempts to PUT or DELETE existing item only
 // allowed by the item owner
-/*app.use('/api/auth/items/:itemid', function (req, res, next) {
+/*app.use('/api/auth/items/:itemid', expressJwt({ secret: 'secretnomore' }), function (req, res, next) {
+  console.log(req.user);
   Item.findById(req.params.itemid, 'owner', function(err, item) {
-    if (item.owner != req.user)
+    if (item.owner != req.user._id)
       return res.status(403).json({ message: 'This item does not belong to you' });
     return next();
   });
@@ -125,7 +124,7 @@ app.delete('/api/auth/items/:itemid', function(req, res) {
   Item.findByIdAndRemove(req.params.itemid, function(err, item) {
     if (err || !item)
       return res.status(404).json({ message: 'No item with id ' + req.params.itemid});
-    User.findById(req.user, function(err, owner) {
+    User.findById(req.user._id, function(err, owner) {
       if (err || !owner)
          return res.status(500).json({ message: 'Failed to lookup owner' });
       owner.items.pull(req.params.itemid);
