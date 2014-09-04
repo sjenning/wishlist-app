@@ -1,0 +1,12 @@
+<!--
+vim: tabstop=2 shiftwidth=2 expandtab
+-->
+<div ng-show="message">{{message.value}}</div>
+<form ng-submit="register()" novalidate>
+  <div><label>First Name:</label> <input type="text" name="name" ng-model="user.name" required /></div>
+  <div><label>Email:</label> <input type="text" name="username" ng-model="user.username" required /></div>
+  <div><label>Password:</label> <input type="password" name="password" ng-model="user.password" required /></div>
+  <div><label>Confirm Password:</label> <input type="password" name="passwordconfirm" ng-model="user.passwordconfirm" required /></div>
+  <div><input type="submit" value="Register" /></div>
+</form>
+
