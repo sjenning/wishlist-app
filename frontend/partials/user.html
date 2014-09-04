@@ -2,17 +2,23 @@
 vim: tabstop=2 shiftwidth=2 expandtab
 -->
 
+<div><span ng-show="message">{{message.value}}</span></div>
 <div>{{ user.name }}</div>
 <div ng-repeat="item in user.items">
   <div ng-hide="isEditItem(item)">
     <a ng-show="item.url" target="_blank" ng-href="{{item.url}}">{{item.name}}</a>
     <span ng-hide="item.url">{{item.name}}</span>
-    <span ng-show="isLoggedInUser()">
+    <span ng-show="isMyItemList()">
       <button ng-click="deleteItem(item)">delete</button>
       <button ng-click="showEdit(item)">edit</button>
     </span>
-    <span ng-hide="isLoggedInUser()">
-      <button ng-click="toggleItemBought(item)">{{item.bought}}</button>
+    <span ng-hide="isMyItemList()">
+      <span ng-show="isChangeable(item)">
+        <button ng-click="toggleItemBought(item)">{{isBought(item)}}</button>
+      </span>
+      <span ng-hide="isChangeable(item)">
+        bought by {{item.buyer.name}}
+      </span>
     </span>
   </div>
   <div ng-show="isEditItem(item)">
@@ -25,11 +31,9 @@ vim: tabstop=2 shiftwidth=2 expandtab
     </form>
   </div>
 </div>
-</div>
-<div>
-<div><span ng-show="message">{{message.value}}</span></div>
-<form ng-submit="addItem()" novalidate>
-  <item-form></item-form>
-  <div><input type="submit" value="Add Item" /></div>
-</form>
+<div ng-show="isMyItemList()">
+  <form ng-submit="addItem()" novalidate>
+    <item-form></item-form>
+    <div><input type="submit" value="Add Item" /></div>
+  </form>
 </div>

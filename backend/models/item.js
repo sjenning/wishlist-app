@@ -1,11 +1,8 @@
+// vim: tabstop=2 shiftwidth=2 expandtab
+
 var mongoose = require('mongoose');
 
 var itemSchema = new mongoose.Schema({
-  bought: {
-    type: Boolean,
-    default: false
-  },
-
   name: {
     type: String,
     required: true,
@@ -34,6 +31,12 @@ var itemSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true,
+  },
+
+  buyer: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    default: null,
   }
 });
 

@@ -18,8 +18,10 @@ app.use(bodyParser.json());
 app.use(logger('dev'));
 app.use(express.static(__dirname + 'public'));
 
+// Every path under /api/auth requires authentication token
 app.use('/api/auth', expressJwt({ secret: 'secretnomore' }));
 
+// Only needed when doing cross-site access
 app.all('*', function(req, res, next) {
   res.header('Access-Control-Allow-Origin', req.headers.origin);
   res.header('Access-Control-Allow-Methods', 'POST, GET, PUT, DELETE, OPTIONS');
@@ -29,6 +31,7 @@ app.all('*', function(req, res, next) {
   next();
 });
 
+// Obtain authentication token
 app.post('/api/login', function(req, res) {
   User.findOne({ username: req.body.username }, function(err, user) {
     if (err || !user)
@@ -41,6 +44,7 @@ app.post('/api/login', function(req, res) {
   });
 });
 
+// Add new user
 app.post('/api/register', function(req, res) {
   var user = new User(req.body);
   user.save(function(err, user) {
@@ -51,6 +55,7 @@ app.post('/api/register', function(req, res) {
   });
 });
 
+// Get user list
 app.get('/api/auth/users', function(req, res) {
   User.find({}, 'name', function(err, users) {
     if (err)
@@ -59,28 +64,35 @@ app.get('/api/auth/users', function(req, res) {
   });
 });
 
+// Get user data
 app.get('/api/auth/users/:userid', function(req, res) {
   var itemFields = "name price priority url";
   if (req.params.userid != req.user._id)
-    itemFields += " bought";
-  User.findById(req.params.userid, 'name items').
-       populate('items', itemFields).
-       exec(function(err, user) {
+    itemFields += " buyer";
+  User.findById(req.params.userid, 'name items')
+  .populate('items', itemFields)
+  .exec(function(err, user) {
     if (err)
       return res.status(404).json({ message: 'No user with id ' + req.params.userid });
-    return res.json(user);
+    if (req.params.userid != req.user._id) {
+      var options = {
+        path: 'items.buyer',
+        model: 'User',
+        select: 'name'
+      };
+      User.populate(user, options, function(err, user) {
+        if (err || !user) {
+          return res.status(404).json({ message: 'No user with id ' + req.params.userid });
+        }
+        return res.json(user);
+      });
+    } else {
+        return res.json(user);
+    }
   });
 });
 
-// debug only
-app.get('/api/auth/items', function(req, res) {
-  Item.find({}, function(err, items) {
-    if (err)
-      return res.status(500).json({ message: 'Failed to retreive items' });
-    return res.json(items);
-  });
-});
-
+// Add item
 app.post('/api/auth/items', function(req, res) {
   User.findById(req.body.owner, function(err, owner) {
     if (err || !owner)
@@ -100,26 +112,42 @@ app.post('/api/auth/items', function(req, res) {
   });
 });
 
-// make sure that attempts to PUT or DELETE existing item only
-// allowed by the item owner
-/*app.use('/api/auth/items/:itemid', expressJwt({ secret: 'secretnomore' }), function (req, res, next) {
-  console.log(req.user);
-  Item.findById(req.params.itemid, 'owner', function(err, item) {
-    if (item.owner != req.user._id)
-      return res.status(403).json({ message: 'This item does not belong to you' });
-    return next();
-  });
-});*/
-
+// Update item
 app.post('/api/auth/items/:itemid', function(req, res) {
   delete req.body._id;
-  Item.findByIdAndUpdate(req.params.itemid, { $set: req.body }, function(err, item) {
+  var owner;
+  Item.findById(req.params.itemid, function(err, item) {
     if (err || !item)
       return res.status(404).json({ message: 'No item with id ' + req.params.itemid});
-    return res.json(item);
+    owner = item.owner;
+  });
+
+  var item = {};
+  if (owner != req.user._id) {
+    // Non-owner is only allowed to update the buyer field
+    item.buyer = req.body.buyer;
+  } else {
+    item = req.body;
+  }
+  Item.findByIdAndUpdate(req.params.itemid, item, function(err, item) {
+    if (err || !item)
+      return res.status(404).json({ message: 'No item with id ' + req.params.itemid});
+    if (item.buyer) {
+      var options = {
+        path: 'buyer',
+        model: 'User',
+        select: 'name'
+      };
+      Item.populate(item, options, function(err, item) {
+        return res.json(item);
+      });
+    } else {
+      return res.json(item);
+    }
   });
 });
 
+// Delete item
 app.delete('/api/auth/items/:itemid', function(req, res) {
   Item.findByIdAndRemove(req.params.itemid, function(err, item) {
     if (err || !item)

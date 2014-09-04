@@ -25,7 +25,13 @@ app.config(['$routeProvider', '$httpProvider', function($routeProvider, $httpPro
     });
     $routeProvider.when('/login', {
       templateUrl: 'partials/login.html',
-      controller: 'LoginController'
+      controller: 'LoginController',
+      public: true
+    });
+    $routeProvider.when('/register', {
+      templateUrl: 'partials/register.html',
+      controller: 'RegisterController',
+      public: true
     });
     $routeProvider.when('/users', {
       templateUrl: 'partials/userlist.html',
@@ -40,17 +46,18 @@ app.config(['$routeProvider', '$httpProvider', function($routeProvider, $httpPro
 }]);
 
 app.run(['$rootScope', '$location', '$cookies', function($rootScope, $location, $cookies) {
-  $rootScope.$on('$routeChangeStart', function(event) {
-    if (!$cookies.token)
+  $rootScope.$on('$routeChangeStart', function(event, next, current) {
+    if (!$cookies.token && !next.public)
       $location.path("/login");
   });
 }]);
 
-app.controller('NavbarController', [ '$scope', '$cookies', '$location', '$log', function($scope, $cookies, $location, $log) {
+app.controller('NavbarController', [ '$scope', '$cookies', '$location', function($scope, $cookies, $location) {
   $scope.homeroute = '#/users/' + $cookies.id;
 
   $scope.logout = function() {
     delete $cookies.token;
+    delete $cookies.id;
     $location.path('/login');
   };
 }]);
@@ -68,12 +75,38 @@ app.controller('LoginController', [ '$scope', '$resource', '$cookies', '$locatio
     })
     .catch(function() {
       delete $cookies.token;
+      delete $cookies.id;
       $scope.message = {type: 'error', value: 'Bad username or password'};
     });
   };
 }]);
 
-app.controller('UserListController', [ '$scope', '$resource', '$cookies', '$location', function($scope, $resource, $cookies, $log) {
+app.controller('RegisterController', [ '$scope', '$resource', '$cookies', '$location', function($scope, $resource, $cookies, $location)  {
+  var User = $resource('http://localhost:2000/api/register');
+  var Login = $resource('http://localhost:2000/api/login');
+  $scope.user = {};
+
+  $scope.register = function() {
+    if ($scope.user.password != $scope.user.passwordconfirm) {
+      $scope.message = {type: 'error', value: 'Passwords do not match' };
+      return;
+    }
+    User.save($scope.user).$promise
+    .then(function(data) {
+      Login.save($scope.user).$promise
+      .then(function(data) {
+        $cookies.token = data.token;
+        $cookies.id = data.id;
+        $location.path('/users/' + data.id);
+      });
+    })
+    .catch(function() {
+      $scope.message = {type: 'error', value: 'Unable to register'};
+    });
+  };
+}]);
+
+app.controller('UserListController', [ '$scope', '$resource', '$cookies', function($scope, $resource, $cookies) {
   var userid = $cookies.id;
   var Users = $resource('http://localhost:2000/api/auth/users');
 
@@ -106,7 +139,6 @@ app.controller('UserController', [ '$scope', '$resource', '$log', '$routeParams'
 
   $scope.addItem = function() {
     $scope.item.owner = $routeParams.userid;
-    $log.log($scope.item);
     Item.save($scope.item).$promise
     .then(function(data) {
       $scope.user.items.push(data);
@@ -154,14 +186,26 @@ app.controller('UserController', [ '$scope', '$resource', '$log', '$routeParams'
     delete $scope.editItem;
   };
 
-  $scope.isLoggedInUser = function() {
+  $scope.isMyItemList = function() {
     return $scope.user._id == userid;
   };
 
+  $scope.isChangeable = function(item) {
+    return !item.buyer || item.buyer._id == userid;
+  }
+
+  $scope.isBought = function(item) {
+    return !!item.buyer;
+  }
+
   $scope.toggleItemBought = function(item) {
-    item.bought = !item.bought;
+    if (!item.buyer)
+      item.buyer = userid;
+    else
+      item.buyer = null;
     Item.save({itemid: item._id}, item).$promise
     .then(function(data) {
+      item.buyer = data.buyer;
       $scope.message = {type: 'success', value: 'Item updated'};
     })
     .catch(function() {
