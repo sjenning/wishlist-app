@@ -41,7 +41,7 @@ app.config(['$routeProvider', '$httpProvider', function($routeProvider, $httpPro
       templateUrl: 'partials/user.html',
       controller: 'UserController'
     });
-    $routeProvider.otherwise({redirectTo: '/'});
+    $routeProvider.otherwise({redirectTo: '/login'});
     $httpProvider.interceptors.push('authInterceptor');
 }]);
 
